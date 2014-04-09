@@ -74,6 +74,16 @@ class T(object):
             result.append(str(task) + '\n')
         return ''.join(result)
 
+    def save(self, path):
+        with open(path, 'w') as f:
+            f.write(str(self).encode('utf-8'))
+
+    @staticmethod
+    def load(path):
+        with open(path, 'r') as f:
+            text = f.read()
+        return T.parse(text)
+
     @staticmethod
     def parse(string):
         active = None
