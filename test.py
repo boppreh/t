@@ -13,6 +13,8 @@ class TestT(unittest.TestCase):
         self.assertFalse(task.is_active)
         task_list.activate(task)
         self.assertTrue(task.is_active)
+        task_list.deactivate(task)
+        self.assertFalse(task.is_active)
 
         self.assertIsNone(task.end)
         task_list.finish(task)

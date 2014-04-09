@@ -1,32 +1,44 @@
 from time import time
 
 class Task(object):
-    def __init__(self, name, start=None, end=None, is_active=False):
+    def __init__(self, id, name, start=None, end=None, is_active=False):
+        self.id = id
         self.name = name
         self.start = start
         self.end = end
         self.is_active = is_active
 
     def __repr__(self):
-        return '[{}{} {}-{}]'.format('!' if self.is_active else '',
-                                       repr(self.name),
-                                       self.start,
-                                       self.end if self.end else '')
+        return '[{} {}{} {}-{}]'.format(self.id,
+                                        '!' if self.is_active else '',
+                                        repr(self.name),
+                                        self.start,
+                                        self.end if self.end else '')
 
 class T(object):
     def __init__(self):
-        pass
+        self.tasks_by_id = {}
+        self.last_id = 0
+        self.active_task = None
 
     def create(self, task_name):
-        return Task(task_name, start=int(time()), end=None, is_active=False)
+        self.last_id += 1
+        task = Task(self.last_id,
+                    task_name,
+                    start=int(time()),
+                    end=None,
+                    is_active=False)
+        self.tasks_by_id[self.last_id] = task
+        return task
 
     def activate(self, task):
         task.is_active = True
-        return task
+
+    def deactivate(self, task):
+        task.is_active = False
 
     def finish(self, task):
         task.end = int(time())
-        return task
 
 if __name__ == '__main__':
     print(T().create('a'))
