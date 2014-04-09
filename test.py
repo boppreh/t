@@ -2,7 +2,7 @@ import unittest
 from time import time
 from t import TaskList
 
-class TestT(unittest.TestCase):
+class TestTaskList(unittest.TestCase):
     def test_basic(self):
         task_list = TaskList()
 
