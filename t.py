@@ -16,10 +16,10 @@ class Task(object):
                                         self.end if self.end else '')
 
 class T(object):
-    def __init__(self):
-        self.tasks_by_id = {}
-        self.last_id = 0
-        self.active = None
+    def __init__(self, tasks_by_id=None, last_id=None, active=None):
+        self.tasks_by_id = tasks_by_id or {}
+        self.last_id = last_id or 0
+        self.active = active or None
 
     def create(self, task_name):
         self.last_id += 1
