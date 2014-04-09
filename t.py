@@ -19,7 +19,7 @@ class T(object):
     def __init__(self):
         self.tasks_by_id = {}
         self.last_id = 0
-        self.active_task = None
+        self.active = None
 
     def create(self, task_name):
         self.last_id += 1
@@ -32,10 +32,16 @@ class T(object):
         return task
 
     def activate(self, task):
+        if self.active is not None:
+            self.deactivate()
+
+        self.active = task
         task.is_active = True
 
-    def deactivate(self, task):
-        task.is_active = False
+    def deactivate(self):
+        if self.active is not None:
+            self.active.is_active = False
+            self.active = None
 
     def finish(self, task):
         task.end = int(time())
