@@ -1,4 +1,5 @@
 from time import time
+import re
 
 class Task(object):
     def __init__(self, id, name, start=None, end=None, is_active=False):
@@ -8,18 +9,28 @@ class Task(object):
         self.end = end
         self.is_active = is_active
 
+    def __eq__(self, other):
+        if not isinstance(other, Task):
+            return False
+
+        return (self.id == other.id and
+                self.name == other.name and
+                self.start == other.start and
+                self.end == other.end and
+                self.is_active == other.is_active)
+
     def __repr__(self):
-        return '[{} {}{} {}-{}]'.format(self.id,
-                                        '!' if self.is_active else '',
-                                        repr(self.name),
-                                        self.start,
-                                        self.end if self.end else '')
+        return '[{}{} {}-{} "{}"]'.format(self.id,
+                                          '!' if self.is_active else '',
+                                          self.start,
+                                          self.end if self.end else '',
+                                          self.name)
 
 class T(object):
-    def __init__(self, tasks_by_id=None, last_id=None, active=None):
+    def __init__(self, tasks_by_id=None, active=None):
         self.tasks_by_id = tasks_by_id or {}
-        self.last_id = last_id or 0
         self.active = active or None
+        self.last_id = max(self.tasks_by_id) if len(self.tasks_by_id) else 0
 
     def create(self, task_name):
         self.last_id += 1
@@ -57,5 +68,40 @@ class T(object):
     def __getitem__(self, id):
         return self.tasks_by_id[id]
 
+    def __repr__(self):
+        result = []
+        for task in self.tasks_by_id.values():
+            result.append(str(task) + '\n')
+        return ''.join(result)
+
+    @staticmethod
+    def parse(string):
+        active = None
+        tasks_by_id = {}
+
+        task_pattern = '\[(\d+)(!?) (\d+)-(\d*) "(.+)"\]\n'
+        for parts in re.findall(task_pattern, string):
+            id = int(parts[0])
+            is_active = parts[1] == '!'
+            start = int(parts[2])
+            end = int(parts[3]) if parts[3] else None
+            name = parts[4]
+            task = Task(id=id,
+                        name=name,
+                        start=start,
+                        end=end,
+                        is_active=is_active)
+
+            assert id not in tasks_by_id
+            tasks_by_id[id] = task
+            if is_active:
+                assert active is None
+                active = task
+
+        return T(tasks_by_id=tasks_by_id, active=active)
+
+
 if __name__ == '__main__':
-    print(T().create('a'))
+    t = T()
+    print(t.create('a'))
+    print(t)

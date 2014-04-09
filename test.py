@@ -45,5 +45,21 @@ class TestT(unittest.TestCase):
         task_list.destroy(task)
         self.assertEqual(len(task_list), 0)
 
+    def test_serialize(self):
+        task_list = T()
+        task1 = task_list.create('Task 1')
+        task2 = task_list.create('Task 2')
+        task_list.finish(task2)
+        task_list.activate(task1)
+
+        string = str(task_list)
+
+        new_task_list = T.parse(string)
+        self.assertEqual(len(new_task_list), 2)
+        self.assertEqual(new_task_list[task1.id], task1)
+        self.assertEqual(new_task_list[task2.id], task2)
+        self.assertIsNotNone(new_task_list[task2.id].end)
+        self.assertTrue(new_task_list[task1.id].is_active)
+
 if __name__ == '__main__':
     unittest.main()
