@@ -1,10 +1,10 @@
 import unittest
 from time import time
-from t import T
+from t import TaskList
 
 class TestT(unittest.TestCase):
     def test_basic(self):
-        task_list = T()
+        task_list = TaskList()
 
         task = task_list.create('Task name')
         self.assertEqual(task.name, 'Task name')
@@ -24,7 +24,7 @@ class TestT(unittest.TestCase):
         self.assertTrue(abs(task.end - time()) <= 1)
 
     def test_two_tasks(self):
-        task_list = T()
+        task_list = TaskList()
         task1 = task_list.create('Task 1')
         task2 = task_list.create('Task 2')
 
@@ -35,7 +35,7 @@ class TestT(unittest.TestCase):
         self.assertEqual(task_list.active, task2)
 
     def test_list_itself(self):
-        task_list = T()
+        task_list = TaskList()
         self.assertEqual(len(task_list), 0)
 
         task = task_list.create('Task')
@@ -46,7 +46,7 @@ class TestT(unittest.TestCase):
         self.assertEqual(len(task_list), 0)
 
     def test_serialize(self):
-        task_list = T()
+        task_list = TaskList()
         task1 = task_list.create('Task 1')
         task2 = task_list.create('Task 2')
         task_list.finish(task2)
@@ -54,7 +54,7 @@ class TestT(unittest.TestCase):
 
         string = str(task_list)
 
-        new_task_list = T.parse(string)
+        new_task_list = TaskList.parse(string)
         self.assertEqual(len(new_task_list), 2)
         self.assertEqual(new_task_list[task1.id], task1)
         self.assertEqual(new_task_list[task2.id], task2)

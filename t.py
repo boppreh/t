@@ -26,7 +26,7 @@ class Task(object):
                                           self.end if self.end else '',
                                           self.name)
 
-class T(object):
+class TaskList(object):
     def __init__(self, tasks_by_id=None, active=None):
         self.tasks_by_id = tasks_by_id or {}
         self.active = active or None
@@ -82,7 +82,7 @@ class T(object):
     def load(path):
         with open(path, 'r') as f:
             text = f.read()
-        return T.parse(text)
+        return TaskList.parse(text)
 
     @staticmethod
     def parse(string):
@@ -108,10 +108,10 @@ class T(object):
                 assert active is None
                 active = task
 
-        return T(tasks_by_id=tasks_by_id, active=active)
+        return TaskList(tasks_by_id=tasks_by_id, active=active)
 
 
 if __name__ == '__main__':
-    t = T()
+    t = TaskList()
     print(t.create('a'))
     print(t)
