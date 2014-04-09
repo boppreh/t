@@ -34,5 +34,16 @@ class TestT(unittest.TestCase):
         self.assertTrue(task2.is_active)
         self.assertEqual(task_list.active, task2)
 
+    def test_list_itself(self):
+        task_list = T()
+        self.assertEqual(len(task_list), 0)
+
+        task = task_list.create('Task')
+        self.assertEqual(len(task_list), 1)
+        self.assertEqual(task_list[task.id], task)
+
+        task_list.destroy(task)
+        self.assertEqual(len(task_list), 0)
+
 if __name__ == '__main__':
     unittest.main()

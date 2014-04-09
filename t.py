@@ -31,6 +31,11 @@ class T(object):
         self.tasks_by_id[self.last_id] = task
         return task
 
+    def destroy(self, task):
+        if task == self.active:
+            self.deactivate()
+        del self.tasks_by_id[task.id]
+
     def activate(self, task):
         if self.active is not None:
             self.deactivate()
@@ -45,6 +50,12 @@ class T(object):
 
     def finish(self, task):
         task.end = int(time())
+
+    def __len__(self):
+        return len(self.tasks_by_id)
+
+    def __getitem__(self, id):
+        return self.tasks_by_id[id]
 
 if __name__ == '__main__':
     print(T().create('a'))
