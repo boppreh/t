@@ -1,4 +1,4 @@
-from time import time
+import time
 import re
 
 class Task(object):
@@ -6,8 +6,9 @@ class Task(object):
     Class representing a single task. Its just a value store and is usually
     paired with a TaskList that manages it.
     """
-    def __init__(self, id, name, start=None, end=None, is_active=False):
-        self.id = id
+    TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
+
+    def __init__(self, name, start=None, end=None, is_active=False):
         self.name = name
         self.start = start
         self.end = end
@@ -17,43 +18,42 @@ class Task(object):
         if not isinstance(other, Task):
             return False
 
-        return (self.id == other.id and
-                self.name == other.name and
+        return (self.name == other.name and
                 self.start == other.start and
                 self.end == other.end and
                 self.is_active == other.is_active)
 
+    def _format_date(self, t):
+        return time.strftime(Task.TIME_FORMAT, time.localtime(t))
+
     def __repr__(self):
-        return '[{}{} {}-{} "{}"]'.format(self.id,
-                                          '!' if self.is_active else '',
-                                          self.start,
-                                          self.end if self.end else '',
-                                          self.name)
+        if self.is_active:
+            template = '[{}] {} ({} - {})'
+        else:
+            template = ' {}  {} ({} - {})'
+        return template.format('x' if self.end else ' ',
+                               self.name,
+                               self._format_date(self.start),
+                               self._format_date(self.end) if self.end else '?')
 
 class TaskList(object):
     """
     List of tasks. Capable of loading and writing to files or strings.
-
-    Each task list creates tasks with locally unique ids and may have one task
-    set as "active".
     """
-    def __init__(self, tasks_by_id=None, active=None):
-        self.tasks_by_id = tasks_by_id or {}
+    def __init__(self, tasks=None, active=None):
+        self.tasks = tasks or []
         self.active = active or None
-        self.last_id = max(self.tasks_by_id) if len(self.tasks_by_id) else 0
 
     def create(self, task_name):
         """
         Creates and returns a new incomplete and inactive task with the given
         name.
         """
-        self.last_id += 1
-        task = Task(self.last_id,
-                    task_name,
-                    start=int(time()),
+        task = Task(task_name,
+                    start=int(time.time()),
                     end=None,
                     is_active=False)
-        self.tasks_by_id[self.last_id] = task
+        self.tasks.insert(0, task)
         return task
 
     def destroy(self, task):
@@ -62,7 +62,7 @@ class TaskList(object):
         """
         if task == self.active:
             self.deactivate()
-        del self.tasks_by_id[task.id]
+        self.tasks.remove(task)
 
     def activate(self, task):
         """
@@ -87,25 +87,16 @@ class TaskList(object):
         """
         Marks a task as finished.
         """
-        task.end = int(time())
+        task.end = int(time.time())
 
     def __len__(self):
         """
         Returns the total number of tasks.
         """
-        return len(self.tasks_by_id)
-
-    def __getitem__(self, id):
-        """
-        Returns a task by its id.
-        """
-        return self.tasks_by_id[id]
+        return len(self.tasks)
 
     def __repr__(self):
-        result = []
-        for task in self.tasks_by_id.values():
-            result.append(str(task) + '\n')
-        return ''.join(result)
+        return ''.join(str(task) + '\n' for task in self.tasks)
 
     def save(self, path):
         """
@@ -129,28 +120,54 @@ class TaskList(object):
         Creates a task list from the given serialized string.
         """
         active = None
-        tasks_by_id = {}
+        tasks = []
 
-        task_pattern = '\[(\d+)(!?) (\d+)-(\d*) "(.+)"\]\n'
-        for parts in re.findall(task_pattern, string):
-            id = int(parts[0])
-            is_active = parts[1] == '!'
-            start = int(parts[2])
-            end = int(parts[3]) if parts[3] else None
-            name = parts[4]
-            task = Task(id=id,
-                        name=name,
+        # Format examples:
+        # [ ] Task name (2014/04/09 23:23:23 - ?)
+        # [x] Task name (2014/04/09 23:23:23 - 2014/04/09 23:23:23)
+        #  x  Task name (2014/04/09 23:23:23 - 2014/04/09 23:23:23)
+        #     Task name (2014/04/09 23:23:23 - ?)
+        task_pattern = '''
+        ^
+        (\[|\s)    # Optional open bracket for active tasks.
+        (x|\s)     # Optional 'x' for closed tasks.
+        (?:\]|\s)  # No need to capture, this will be the same as the first.
+        \s
+
+        (.+?)      # Task name.
+
+        \s?
+        \(
+        (.+?)      # Start date.
+        \s?-\s?
+        (.+|\?)    # Optional end date, it's an ? if not present.
+        \)
+        $
+        '''
+        for parts in re.findall(task_pattern, string, re.VERBOSE | re.MULTILINE):
+            is_active = parts[0] == '['
+            name = parts[2]
+            start = time.mktime(time.strptime(parts[3], Task.TIME_FORMAT))
+            if parts[4] == '?':
+                end = None
+            else:
+                end = time.mktime(time.strptime(parts[4], Task.TIME_FORMAT))
+
+            # Should not contain an "x" and no finish date or vice-versa.
+            assert (parts[4] != '?') == (parts[1] == 'x')
+
+            task = Task(name=name,
                         start=start,
                         end=end,
                         is_active=is_active)
+            tasks.append(task)
 
-            assert id not in tasks_by_id
-            tasks_by_id[id] = task
             if is_active:
+                # Should have only one active task.
                 assert active is None
                 active = task
 
-        return TaskList(tasks_by_id=tasks_by_id, active=active)
+        return TaskList(tasks=tasks, active=active)
 
 
 if __name__ == '__main__':

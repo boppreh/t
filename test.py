@@ -40,7 +40,6 @@ class TestTaskList(unittest.TestCase):
 
         task = task_list.create('Task')
         self.assertEqual(len(task_list), 1)
-        self.assertEqual(task_list[task.id], task)
 
         task_list.destroy(task)
         self.assertEqual(len(task_list), 0)
@@ -56,10 +55,7 @@ class TestTaskList(unittest.TestCase):
 
         new_task_list = TaskList.parse(string)
         self.assertEqual(len(new_task_list), 2)
-        self.assertEqual(new_task_list[task1.id], task1)
-        self.assertEqual(new_task_list[task2.id], task2)
-        self.assertIsNotNone(new_task_list[task2.id].end)
-        self.assertTrue(new_task_list[task1.id].is_active)
+        self.assertEqual(new_task_list.tasks, task_list.tasks)
 
 if __name__ == '__main__':
     unittest.main()
