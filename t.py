@@ -171,18 +171,31 @@ class TaskList(object):
         return TaskList(tasks=tasks, active=active)
 
 
+class FileTaskList(TaskList):
+    def __init__(self, path):
+        # make sure the file exists.
+        open(path, 'a').close()
+
+        self.path = path
+        self.reload()
+
+    def save(self):
+        super(FileTaskList, self).save(self.path)
+
+    def reload(self):
+        base_task_list = TaskList.load(self.path)
+        self.tasks = base_task_list.tasks
+        self.active = base_task_list.active
+
+
 if __name__ == '__main__':
-    import os
-    if not os.path.exists('tasks.txt'):
-        task_list = TaskList()
-    else:
-        task_list = TaskList.load('tasks.txt')
+    task_list = FileTaskList('tasks.txt')
 
     print(task_list)
     new_task = input('New task: ')
     if new_task:
         task_list.create(new_task)
-        task_list.save('tasks.txt')
+        task_list.save()
         print('Task created.')
     else:
         print('No task created.')
