@@ -153,7 +153,8 @@ class TaskList(object):
             else:
                 end = time.mktime(time.strptime(parts[4], Task.TIME_FORMAT))
 
-            # Should not contain an "x" and no finish date or vice-versa.
+            # There are two signals for it to be complete: the "x" and the end
+            # date. Those two should not be contradictory.
             assert (parts[4] != '?') == (parts[1] == 'x')
 
             task = Task(name=name,
