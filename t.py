@@ -103,7 +103,7 @@ class TaskList(object):
         Writes this task list to a file.
         """
         with open(path, 'w') as f:
-            f.write(str(self).encode('utf-8'))
+            f.write(str(self))
 
     @staticmethod
     def load(path):
@@ -172,6 +172,17 @@ class TaskList(object):
 
 
 if __name__ == '__main__':
-    t = TaskList()
-    print(t.create('a'))
-    print(t)
+    import os
+    if not os.path.exists('tasks.txt'):
+        task_list = TaskList()
+    else:
+        task_list = TaskList.load('tasks.txt')
+
+    print(task_list)
+    new_task = input('New task: ')
+    if new_task:
+        task_list.create(new_task)
+        task_list.save('tasks.txt')
+        print('Task created.')
+    else:
+        print('No task created.')
