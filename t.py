@@ -172,17 +172,32 @@ class TaskList(object):
 
 
 class FileTaskList(TaskList):
+    """
+    Task list that is persisted in a file. 
+    """
     def __init__(self, path):
-        # make sure the file exists.
-        open(path, 'a').close()
+        """
+        Creates a new FileTaskList from the task list in the given path. If
+        path does not exist, an empty file is created.
 
+        The path is remembered for future operations.
+        """
+        # Make sure the file exists.
+        open(path, 'a').close()
         self.path = path
         self.reload()
 
-    def save(self):
-        super(FileTaskList, self).save(self.path)
+    # Must allow passing of parameters to not violate the superclass behavior.
+    def save(self, path=None):
+        """
+        Saves the task list to the given path, or its own if none is given.
+        """
+        super(FileTaskList, self).save(path or self.path)
 
     def reload(self):
+        """
+        Discards the changes made and reloads the tasks from its own path.
+        """
         base_task_list = TaskList.load(self.path)
         self.tasks = base_task_list.tasks
         self.active = base_task_list.active
