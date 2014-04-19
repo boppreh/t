@@ -83,17 +83,32 @@ class TaskList(object):
             self.active.is_active = False
             self.active = None
 
-    def finish(self, task):
+    def close(self, task):
         """
         Marks a task as finished.
         """
         task.end = int(time.time())
+
+    def reopen(self, task):
+        """
+        Marks a task as finished.
+        """
+        task.end = None
 
     def __len__(self):
         """
         Returns the total number of tasks.
         """
         return len(self.tasks)
+
+    def __iter__(self):
+        """
+        Returns an iterator over all tasks.
+        """
+        return iter(reversed(self.tasks))
+
+    def __getitem__(self, index):
+        return self.tasks[index]
 
     def __repr__(self):
         return ''.join(str(task) + '\n' for task in self.tasks)

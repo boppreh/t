@@ -20,8 +20,10 @@ class TestTaskList(unittest.TestCase):
         self.assertFalse(task.is_active)
 
         self.assertIsNone(task.end)
-        task_list.finish(task)
+        task_list.close(task)
         self.assertTrue(abs(task.end - time()) <= 1)
+        task_list.reopen(task)
+        self.assertIsNone(task.end)
 
     def test_two_tasks(self):
         task_list = TaskList()
@@ -48,7 +50,7 @@ class TestTaskList(unittest.TestCase):
         task_list = TaskList()
         task1 = task_list.create('Task 1')
         task2 = task_list.create('Task 2')
-        task_list.finish(task2)
+        task_list.close(task2)
         task_list.activate(task1)
 
         string = str(task_list)
